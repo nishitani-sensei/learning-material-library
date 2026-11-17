@@ -1,0 +1,34 @@
+name: 初回ソースの登録
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: 検査済みの教材ライブラリを展開
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64, hashlib, io, pathlib, zipfile
+          source = pathlib.Path('initial-source.b64')
+          data = base64.b64decode(source.read_text().strip(), validate=True)
+          assert hashlib.sha256(data).hexdigest() == '6578110b27f67a06fc1fa54a0f859880ead6bf96c81647966e49a57244ba1c9c', 'Source checksum mismatch'
+          with zipfile.ZipFile(io.BytesIO(data)) as archive:
+              for item in archive.infolist():
+                  parts = pathlib.PurePosixPath(item.filename)
+                  assert not parts.is_absolute() and not any(p in ['..', '.git', '.github', '.local', 'node_modules', 'dist'] for p in parts.parts)
+              assert len(archive.infolist()) == 37
+              archive.extractall('.')
+          source.unlink()
+          print('Verified 37 source files; no private local files included.')
+          PY
+      - name: 通常のソースファイルとして保存
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add --all
+          git commit -m "Add verified learning library source"
+          git push origin HEAD:main
