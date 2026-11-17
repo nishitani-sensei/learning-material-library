@@ -1,0 +1,6 @@
+{
+  "id":"addition-cards","title":"たし算カード","description":"カードをめくって、こたえをたしかめよう。自分のペースでたし算の練習ができます。",
+  "audience":"student","category":"math","grades":[1,2],"tags":["たし算","計算","くりかえし"],"kind":"学習アプリ",
+  "entry":"index.html","thumbnail":"preview.svg","updated":"2026-11-17","sample":true,
+  "instructions":["しきを見て、こたえを考えます。","「こたえを見る」を押して、たしかめます。","「つぎのカード」で、べつのもんだいにすすみます。"]
+}

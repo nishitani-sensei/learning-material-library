@@ -1,0 +1,17 @@
+{
+  "name": "learning-material-library",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.25.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/catalog.mjs && vite --host 127.0.0.1 --port 4188 --strictPort",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.mjs",
+    "build": "node scripts/catalog.mjs && tsc --noEmit && vite build && node scripts/verify-dist.mjs",
+    "preview": "node scripts/serve.mjs",
+    "password": "node scripts/password.mjs",
+    "new:tool": "node scripts/new-tool.mjs"
+  },
+  "devDependencies": {"typescript": "5.9.3", "vite": "8.0.0"}
+}

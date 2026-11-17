@@ -1,0 +1,5 @@
+nodeLinker: hoisted
+packageImportMethod: copy
+storeDir: .local/pnpm-store
+cacheDir: .local/pnpm-cache
+updateNotifier: false

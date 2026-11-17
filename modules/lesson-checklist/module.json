@@ -1,0 +1,6 @@
+{
+  "id":"lesson-checklist","title":"授業準備チェック","description":"授業前の小さな準備を、ひとつずつ。必要なものを確かめて、落ち着いて教室へ。",
+  "audience":"teacher","category":"lesson","grades":[],"tags":["準備","チェックリスト","授業"],"kind":"仕事の道具",
+  "entry":"index.html","thumbnail":"preview.svg","updated":"2026-11-17","sample":true,
+  "instructions":["用意できた項目にチェックを付けます。","チェックはこの端末のブラウザー内だけに保存します。","個人情報は入力しません。別の授業の準備では「チェックを外す」を使います。"]
+}

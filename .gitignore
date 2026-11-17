@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.local/
+public/catalog/
+public/tools/
+public/shared/
+public/library.config.json
+.sites-runtime/
+.DS_Store
+*.log
