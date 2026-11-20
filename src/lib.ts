@@ -29,7 +29,7 @@ export function visibleTools(tools:Tool[], teacher:boolean) {return tools.filter
 export function filterTools(tools:Tool[], filters:{query:string;category:string;grade:string;kind:string}) {
   const words = normalize(filters.query).split(/\s+/).filter(Boolean);
   return tools.filter(t=> (!filters.category || t.category===filters.category) &&
-    (!filters.grade || t.audience==='student' && (t.grades.length===0 || t.grades.includes(Number(filters.grade)))) &&
+    (!filters.grade || subjects.some(subject=>subject.id===t.category) && (t.grades.length===0 || t.grades.includes(Number(filters.grade)))) &&
     (!filters.kind || t.kind===filters.kind) &&
     words.every(w=>normalize([t.title,t.description,categoryName(t.category),...t.tags].join(' ')).includes(w)));
 }
