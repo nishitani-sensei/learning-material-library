@@ -48,7 +48,7 @@ modules/multiplication-cards/
 
 児童用の分類ID：`japanese` 国語／`math` 算数／`science` 理科／`social` 社会／`life` 生活／`english` 外国語／`music` 音楽／`pe` 体育／`art` 図画工作／`home` 家庭／`moral` 道徳／`integrated` 総合／`activities` 特別活動。
 
-先生用の分類ID：`lesson` 授業準備／`classroom` 学級づくり／`school` 行事・校務／`documents` 文書・印刷。
+先生用の教材には、上の教科または `lesson` 授業準備／`classroom` 学級づくり／`school` 行事・校務／`documents` 文書・印刷を指定できます。教科を指定した先生用教材は、先生モードでその教科の一覧に並びます。
 
 ## 4. 保存と公開の決まり
 
