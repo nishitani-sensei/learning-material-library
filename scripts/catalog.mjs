@@ -10,7 +10,8 @@ export function validateMetadata(m,folder,seen=new Set()){
   if(m.id!==folder||!/^[a-z0-9][a-z0-9-]*$/.test(m.id)||seen.has(m.id))fail('IDは重複しない半角英数字・ハイフンにしてください');
   if(!['student','teacher'].includes(m.audience))fail('対象をstudentまたはteacherにしてください');
   for(const key of ['title','description','kind'])if(typeof m[key]!=='string'||!m[key].trim())fail(`${key}を入力してください`);
-  if(!categories[m.audience].includes(m.category))fail('分類を確認してください');
+  const allowedCategories=m.audience==='teacher'?[...categories.student,...categories.teacher]:categories.student;
+  if(!allowedCategories.includes(m.category))fail('分類を確認してください');
   if(!Array.isArray(m.grades)||!m.grades.every(g=>Number.isInteger(g)&&g>=1&&g<=6))fail('学年は1〜6の配列にしてください');
   if(m.audience==='teacher'&&m.grades.length)fail('先生用の学年は空の配列にしてください');
   for(const key of ['tags','instructions'])if(!Array.isArray(m[key])||!m[key].every(x=>typeof x==='string'&&x.trim()))fail(`${key}を文字の配列にしてください`);
