@@ -28,6 +28,8 @@ modules/multiplication-cards/
 
 画像やCSSの場所は `./assets/picture.png` のような相対パスにします。`/assets/picture.png` のようにサイト全体の先頭を指すパスは、GitHub Pagesの保存場所名を含むURLでは壊れる場合があります。
 
+配布物の関連ファイルが多い場合は、`files` と同じ階層に `assets.tar.gz` を置けます。公開用の生成時に、アーカイブの中の相対パスを保って `files` の内容に加えます。入口と見本画像は `files` に置き、アーカイブ内に同じファイルを入れないでください。
+
 新しいHTMLには `<script src="../../shared/return.js"></script>` をbody内に置くと、ライブラリへ戻る入口が付きます。公開先では `tools/教材ID/` にフォルダー一式が出力されます。深い階層を入口にする場合は、共有部品までの相対パスも合わせてください。
 
 ## 3. 紹介情報を整える
