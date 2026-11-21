@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#edf3ed">
+  <title>人物相関図</title>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app/main.js"></script>
+</head>
+<body>
+  <div class="app">
+    <section id="start" class="start" aria-labelledby="start-title">
+      <header class="site-header">
+        <a id="library-link" class="library-link" hidden>ライブラリへ戻る</a>
+        <span class="brand"><span class="brand-mark" aria-hidden="true">⌘</span> 人物相関図</span>
+      </header>
+      <section id="home" class="home">
+        <div class="home-content">
+          <h1 id="start-title">人物相関図</h1>
+          <p>登場人物をならべて、<br>つながりや気もちを見つけよう。</p>
+          <div class="home-actions">
+            <button id="new-work" class="primary" disabled><span aria-hidden="true">＋</span>新しい相関図を作成</button>
+            <button id="open-works" disabled><span aria-hidden="true">▤</span>相関図の続きを編集</button>
+          </div>
+          <button id="import-json" class="plain import-button" disabled>JSONファイルから読み込む</button>
+          <p id="start-status" class="start-status" role="status">保存の準備をしています…</p>
+        </div>
+        <div class="home-art">
+          <canvas id="home-example" width="990" height="700" role="img" aria-label="架空の物語「森の小さな手紙」の人物相関図の見本"></canvas>
+        </div>
+      </section>
+      <section id="works" class="works" aria-labelledby="works-title" hidden>
+        <div class="section-head">
+          <button id="home-back" class="plain">トップに戻る</button>
+          <button id="list-new" class="primary">＋ 新しい相関図</button>
+        </div>
+        <h1 id="works-title">相関図の続きを編集</h1>
+        <div id="work-cards" class="work-grid"></div>
+      </section>
+    </section>
+
+    <section id="editor" class="editor" aria-label="相関図の編集" hidden>
+      <header class="editor-header">
+        <button id="editor-back" class="back-button" aria-label="作品一覧に戻る"><span aria-hidden="true">‹</span><span>作品一覧</span></button>
+        <div class="editor-title"><span id="work-title"></span><strong id="scene-title"></strong></div>
+        <div class="scene-nav">
+          <label class="visually-hidden" for="scene-select">場面を切り替える</label>
+          <select id="scene-select"></select>
+          <button id="scene-menu">場面の管理</button>
+          <button id="next-scene" class="add-scene"><span aria-hidden="true">＋</span> 次の場面</button>
+        </div>
+        <span id="save-status" class="save-status" role="status">保存済み</span>
+        <button id="editor-library" class="plain library-link" hidden>ライブラリへ戻る</button>
+        <button id="export" class="primary">出力</button>
+      </header>
+
+      <div class="toolbar-scroll">
+        <div class="toolbar" role="group" aria-label="相関図の道具">
+          <div class="tool-group">
+            <button class="tool" data-mode="select" data-icon="select" aria-pressed="true">選択・移動</button>
+            <button class="tool" data-add="person" data-icon="person">人物</button>
+            <button class="tool" data-mode="relation" data-icon="relation" aria-pressed="false">関係線</button>
+            <button class="tool" id="note-menu" data-icon="note">メモ</button>
+            <button class="tool" data-add="text" data-icon="text">文字</button>
+          </div>
+          <div class="tool-group">
+            <button class="tool" data-mode="pen" data-icon="pen" aria-pressed="false">ペン</button>
+            <button class="tool" data-mode="erase" data-icon="erase" aria-pressed="false">消しゴム</button>
+            <button class="tool" data-mode="hand" data-icon="hand" aria-pressed="false">紙面の移動</button>
+          </div>
+          <div class="tool-group actions">
+            <button class="tool" id="undo" data-icon="undo" disabled>元に戻す</button>
+            <button class="tool" id="redo" data-icon="redo" disabled>やり直す</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="context-bar">
+        <span id="tool-hint">タップで選ぶ・ドラッグで動かす</span>
+        <div class="context-actions" id="selection-actions" hidden>
+          <strong id="selection-label"></strong>
+          <button id="edit-item" class="small">編集</button>
+          <button id="delete-item" class="small danger-text">削除</button>
+        </div>
+        <div class="pen-settings" id="pen-settings" hidden>
+          <span id="pen-colors" class="swatches" role="group" aria-label="ペンの色"></span>
+          <label for="pen-width" class="visually-hidden">ペンの太さ</label>
+          <select id="pen-width"><option value="3">細</option><option value="7" selected>中</option><option value="13">太</option></select>
+        </div>
+        <div class="zoom-controls" role="group" aria-label="紙面の大きさ">
+          <button id="zoom-out" class="small" aria-label="縮小">−</button>
+          <button id="zoom-fit" class="small" aria-label="ページ全体を表示" title="ページ全体を表示">100%</button>
+          <button id="zoom-in" class="small" aria-label="拡大">＋</button>
+        </div>
+      </div>
+      <aside id="save-error" class="save-error" hidden>
+        <span id="save-error-text" role="alert"></span>
+        <button id="retry-save" class="small">もう一度保存</button>
+        <button id="emergency-json" class="small">今の編集をJSONに保存</button>
+        <button id="reopen" class="small" hidden>保存済みの作品を開き直す</button>
+      </aside>
+      <div class="board-wrap">
+        <canvas id="board" tabindex="0" aria-label="相関図の紙面"></canvas>
+        <span class="portrait-hint">横向きがおすすめです</span>
+      </div>
+    </section>
+  </div>
+
+  <dialog id="modal" aria-labelledby="modal-title">
+    <header><h2 id="modal-title"></h2><button id="close-modal" class="small icon-close" aria-label="閉じる">×</button></header>
+    <div id="modal-body"></div>
+  </dialog>
+  <input id="import-file" type="file" accept=".json,application/json" hidden>
+  <div id="toast" class="toast" hidden><span id="toast-text" role="status"></span><button id="restore-deleted" class="small" hidden>取り消す</button><button id="close-toast" class="small" aria-label="お知らせを閉じる">×</button></div>
+</body>
+</html>
