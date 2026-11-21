@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#162d43">
+  <title>運動会運営アプリ</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <script src="model.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <script src="../../shared/return.js"></script>
+  <header class="masthead">
+    <div class="wrap header-content">
+      <div class="title-row">
+        <div><p id="school"></p><h1 id="title">運動会運営アプリ</h1></div>
+        <div class="status"><strong id="save-status" role="status">保存先を確認中</strong><span id="offline-status">オフライン起動を確認中</span></div>
+      </div>
+      <div class="scoreboard" aria-label="総合得点">
+        <div class="total red"><span>赤組</span><strong id="red-score">0</strong><span>点</span></div>
+        <div class="score-center"><strong>総合得点</strong><label><input type="checkbox" id="drafts"> 仮保存も含める</label></div>
+        <div class="total white"><span>白組</span><strong id="white-score">0</strong><span>点</span></div>
+      </div>
+    </div>
+  </header>
+  <div class="error-bar" id="storage-error" role="alert" hidden></div>
+  <nav class="navigation" aria-label="主要メニュー">
+    <div class="wrap tabs">
+      <button type="button" data-view="progress" aria-current="page">進行</button>
+      <button type="button" data-view="scoring">得点入力</button>
+      <button type="button" data-view="settings">設定</button>
+      <button type="button" data-view="records">記録・保存</button>
+    </div>
+  </nav>
+  <main class="wrap">
+    <section id="progress" class="view" aria-labelledby="progress-title">
+      <div class="section-title"><h2 id="progress-title">プログラム</h2><p>開始・終了を押して実際の時刻を記録します。</p></div>
+      <div id="programs" class="cards"></div>
+    </section>
+    <section id="scoring" class="view" aria-labelledby="scoring-title" hidden>
+      <div class="section-title"><h2 id="scoring-title">得点入力</h2><p>得点用紙を見ながら順位や勝敗を入力します。</p></div>
+      <div id="score-programs" class="cards"></div>
+    </section>
+    <section id="settings" class="view" aria-labelledby="settings-title" hidden>
+      <div class="section-title"><h2 id="settings-title">設定</h2></div>
+      <div class="settings-grid">
+        <section class="card">
+          <h3>大会</h3>
+          <label class="field" for="event-picker">表示する大会<select id="event-picker"></select></label>
+          <div class="actions"><button type="button" data-action="event-edit">大会情報を編集</button><button type="button" data-action="event-copy">設定をコピーして次の大会を作る</button></div>
+        </section>
+        <section class="card">
+          <h3>スプレッドシートの設定を引き継ぐ</h3>
+          <p>学校で編集した配点、プログラム、レース数をCSVで読み込めます。</p>
+          <button type="button" data-action="import-sheets">設定CSVを読み込む</button>
+        </section>
+      </div>
+      <div class="section-title"><div><h3>配点</h3><p>同じ配点を指定した競技に適用されます。</p></div><button type="button" data-action="rule-add">配点を追加</button></div>
+      <div id="rules" class="settings-grid"></div>
+      <div class="section-title"><div><h3>プログラム・レース数</h3><p>プログラムごとに使う配点を選べます。</p></div><button type="button" data-action="program-add">プログラムを追加</button></div>
+      <div id="program-settings" class="cards"></div>
+    </section>
+    <section id="records" class="view" aria-labelledby="records-title" hidden>
+      <div class="section-title"><h2 id="records-title">記録・保存</h2></div>
+      <div class="settings-grid">
+        <section class="card"><h3>公式記録</h3><p>確定得点と開始・終了時刻をA4の印刷画面にまとめます。</p><p id="record-status"></p><button type="button" class="primary" id="report-button" data-action="report">印刷・PDF保存用の記録を表示</button></section>
+        <section class="card"><h3>復元用バックアップ</h3><p>すべての大会の設定と記録をファイルに保存します。読み込むと別の大会として追加されます。</p><div class="actions"><button type="button" class="primary" data-action="backup">バックアップを保存</button><button type="button" data-action="restore">バックアップを読み込む</button></div></section>
+      </div>
+      <div class="section-title"><h3>変更履歴</h3></div>
+      <div id="history" class="card"></div>
+    </section>
+    <section id="report" class="view" aria-labelledby="report-title" hidden>
+      <div class="actions report-actions"><button type="button" data-view="records">記録・保存へ戻る</button><button class="primary" type="button" data-action="print">印刷・PDF保存</button></div>
+      <article id="print-content"></article>
+    </section>
+  </main>
+  <dialog id="dialog" aria-labelledby="dialog-title">
+    <form id="dialog-form" class="dialog-body">
+      <header><h2 id="dialog-title"></h2><button type="button" class="close" aria-label="閉じる" data-action="close">×</button></header>
+      <div id="dialog-content"></div>
+      <p id="dialog-error" class="form-error" role="alert" hidden></p>
+      <footer id="dialog-actions" class="actions"></footer>
+    </form>
+  </dialog>
+  <p id="message" class="toast" role="status" hidden></p>
+  <noscript><p class="wrap">このアプリを使うには、ブラウザでJavaScriptを有効にしてください。</p></noscript>
+</body>
+</html>
