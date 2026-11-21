@@ -1,8 +1,11 @@
-import {readFile,readdir,mkdir,cp,writeFile,stat} from 'node:fs/promises';
+import {readFile,readdir,mkdir,cp,writeFile,stat,lstat} from 'node:fs/promises';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 export const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const categories={student:['japanese','math','science','social','life','english','music','pe','art','home','moral','integrated','activities'],teacher:['lesson','classroom','school','documents']};
+const runTar = promisify(execFile);
 export function validRelative(p){return typeof p==='string'&&p.length>0&&!path.isAbsolute(p)&&!p.includes('\\')&&!p.split('/').some(x=>!x||x==='.'||x==='..')&&!/[:?#\u0000-\u0020]/.test(p);}
 export function validateMetadata(m,folder,seen=new Set()){
   const fail=msg=>{throw new Error(`${folder}: ${msg}`);};
@@ -29,6 +32,24 @@ async function inspectFiles(dir,base=dir){
     else {if(/(^\.|\.(?:env|pem|key|dpapi)$)/i.test(e.name))throw new Error('公開しないファイルが教材に含まれています');list.push(path.relative(base,p).split(path.sep).join('/'));}
   }return list;
 }
+async function expandAssetBundle(source, destination) {
+  const archive = path.join(source, 'assets.tar.gz');
+  const info = await lstat(archive).catch(error => {
+    if (error.code !== 'ENOENT') throw error;
+  });
+  if (!info) return;
+  if (!info.isFile()) throw new Error('教材の素材は通常のアーカイブファイルにしてください');
+  const listings = await Promise.all([runTar('tar', ['-tf', archive]), runTar('tar', ['-tvf', archive])]);
+  const entries = listings[0].stdout.trimEnd().split(/\r?\n/);
+  const details = listings[1].stdout.trimEnd().split(/\r?\n/);
+  if (entries.length !== details.length || entries.some((entry, index) =>
+    !validRelative(entry.replace(/\/$/, '')) || !/^[\w@./-]+$/.test(entry) ||
+    entry.split('/').some(part => part.startsWith('.') || /\.(?:env|pem|key|dpapi)$/i.test(part)) ||
+    !/^[-d]/.test(details[index]))) {
+    throw new Error('教材の素材に公開できないパスまたはファイルが含まれています');
+  }
+  await runTar('tar', ['-xkf', archive, '-C', destination]);
+}
 export async function buildCatalog(projectRoot=root){
   const dir=path.join(projectRoot,'modules'),publicDir=path.join(projectRoot,'public');
   const result={student:[],teacher:[]},seen=new Set();
@@ -49,7 +70,11 @@ export async function buildCatalog(projectRoot=root){
   for(const audience of ['student','teacher']){
     result[audience].sort((a,b)=>b.updated.localeCompare(a.updated)||a.id.localeCompare(b.id));
     await writeFile(path.join(publicDir,'catalog',`${audience}.json`),JSON.stringify(result[audience],null,2)+'\n');
-    for(const item of result[audience])await cp(path.join(dir,item.id,'files'),path.join(publicDir,'tools',item.id),{recursive:true});
+    for(const item of result[audience]){
+      const source=path.join(dir,item.id),destination=path.join(publicDir,'tools',item.id);
+      await cp(path.join(source,'files'),destination,{recursive:true});
+      await expandAssetBundle(source,destination);
+    }
   }
   await cp(path.join(projectRoot,'shared'),path.join(publicDir,'shared'),{recursive:true});
   await writeFile(path.join(publicDir,'library.config.json'),JSON.stringify({teacherMode:config,version:'1.0.0'},null,2)+'\n');
