@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>開発者モード｜教材ライブラリ</title>
+  <link rel="stylesheet" href="./admin.css">
+  <script type="module" src="./admin.js"></script>
+</head>
+<body>
+  <header class="site-bar">
+    <a href="../">← 教材ライブラリ</a>
+    <button id="logout" type="button" class="secondary" hidden>開発者モードを終了</button>
+  </header>
+  <main>
+    <h1>開発者モード</h1>
+    <p id="status" role="status" aria-live="polite"></p>
+    <section id="sign-in" class="panel sign-in" aria-labelledby="sign-in-heading" hidden>
+      <h2 id="sign-in-heading">開発者用をひらく</h2>
+      <p id="sign-in-note">開発者用のパスワードを入力してください。</p>
+      <form id="login">
+        <label for="password">開発者用パスワード</label>
+        <input id="password" type="password" autocomplete="current-password" minlength="12" maxlength="128" required>
+        <label id="confirm-label" for="confirm-password" hidden>確認のため、もう一度入力</label>
+        <input id="confirm-password" type="password" autocomplete="new-password" minlength="12" maxlength="128" hidden>
+        <button class="primary" type="submit">開発者用をひらく</button>
+      </form>
+    </section>
+    <section id="dashboard" hidden>
+      <p class="intro">アプリの公開設定を変えたり、保存なしで動作を確かめたりできます。</p>
+      <div class="panel">
+        <div class="list-heading">
+          <h2>アプリの一覧</h2>
+          <button id="refresh" type="button" class="secondary">表示を更新</button>
+        </div>
+        <div class="publication-tools">
+          <button id="copy-settings" type="button" class="secondary">公開設定をコピー</button>
+          <a href="https://github.com/nishitani-sensei/learning-material-library/edit/main/config/publication.json" target="_blank" rel="noopener noreferrer">GitHubで公開設定を開く</a>
+        </div>
+        <p class="scope">公開設定は、GitHub Pagesに反映した時点で切り替わります。</p>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="アプリごとの公開設定と動作確認">
+          <table>
+            <thead><tr>
+              <th scope="col">アプリ</th>
+              <th scope="col">次回の公開</th><th scope="col">動作確認</th>
+            </tr></thead>
+            <tbody id="tools"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+  <dialog id="publication" aria-labelledby="publication-title" aria-describedby="publication-note">
+    <h2 id="publication-title"></h2>
+    <p id="publication-note"></p>
+    <div class="dialog-actions">
+      <button type="button" id="cancel-publication" class="secondary" autofocus>キャンセル</button>
+      <button type="button" id="save-publication" class="primary">設定を保存</button>
+    </div>
+  </dialog>
+  <dialog id="preview" aria-labelledby="preview-title">
+    <div class="preview-heading">
+      <div><h2 id="preview-title"></h2><p>保存を止めた状態で動作を確認しています。</p></div>
+      <button type="button" id="close-preview" class="secondary" autofocus>閉じる</button>
+    </div>
+    <iframe title="保存なしのアプリ画面" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+  </dialog>
+</body>
+</html>
