@@ -50,13 +50,56 @@ async function expandAssetBundle(source, destination) {
   }
   await runTar('tar', ['-xkf', archive, '-C', destination]);
 }
-export async function buildCatalog(projectRoot=root){
-  const dir=path.join(projectRoot,'modules'),publicDir=path.join(projectRoot,'public');
-  const result={student:[],teacher:[]},seen=new Set();
+export async function readModules(projectRoot=root){
+  const dir=path.join(projectRoot,'modules');
+  const seen=new Set(),modules=[];
   for(const folder of (await readdir(dir,{withFileTypes:true})).filter(e=>e.isDirectory()).map(e=>e.name).sort()){
-    const source=path.join(dir,folder),m=validateMetadata(JSON.parse(await readFile(path.join(source,'module.json'),'utf8')),folder,seen);
-    const files=path.join(source,'files');await inspectFiles(files);
-    for(const item of [m.entry,m.thumbnail])if(!(await stat(path.join(files,item))).isFile())throw new Error(`${folder}: ファイルがありません ${item}`);
+    const source=path.join(dir,folder);
+    const module=validateMetadata(JSON.parse(await readFile(path.join(source,'module.json'),'utf8')),folder,seen);
+    modules.push(module);
+  }
+  return modules;
+}
+
+export async function readPublication(projectRoot,modules){
+  let setting;
+  try {
+    setting=JSON.parse(await readFile(path.join(projectRoot,'config','publication.json'),'utf8'));
+  } catch (error) {
+    if(error.code!=='ENOENT') throw error;
+    return new Set();
+  }
+  const ids=new Set(modules.map(module=>module.id));
+  if(!Array.isArray(setting?.unpublished)||
+    new Set(setting.unpublished).size!==setting.unpublished.length||
+    setting.unpublished.some(id=>!ids.has(id))) {
+    throw new Error('公開設定に存在しない教材か重複した教材が含まれています。');
+  }
+  return new Set(setting.unpublished);
+}
+
+export async function copyModuleFiles(projectRoot,module,destination){
+  const source=path.join(projectRoot,'modules',module.id);
+  await cp(path.join(source,'files'),destination,{recursive:true});
+  await expandAssetBundle(source,destination);
+}
+
+export async function verifyModuleFiles(projectRoot,m){
+  const files=path.join(projectRoot,'modules',m.id,'files');
+  await inspectFiles(files);
+  for(const item of [m.entry,m.thumbnail]){
+    if(!(await stat(path.join(files,item))).isFile()) throw new Error(`${m.id}: ファイルがありません ${item}`);
+  }
+}
+
+export async function buildCatalog(projectRoot=root){
+  const publicDir=path.join(projectRoot,'public');
+  const result={student:[],teacher:[]};
+  const modules=await readModules(projectRoot);
+  const unpublished=await readPublication(projectRoot,modules);
+  const published=modules.filter(module=>!unpublished.has(module.id));
+  for(const m of published){
+    await verifyModuleFiles(projectRoot,m);
     // 明示した紹介項目だけを公開する。設定メモなどの付加情報は取り込まない。
     result[m.audience].push({id:m.id,title:m.title,description:m.description,audience:m.audience,category:m.category,grades:m.grades,
       tags:m.tags,kind:m.kind,entry:`tools/${m.id}/${m.entry}`,thumbnail:`tools/${m.id}/${m.thumbnail}`,updated:m.updated,instructions:m.instructions,sample:m.sample});
@@ -70,12 +113,8 @@ export async function buildCatalog(projectRoot=root){
   for(const audience of ['student','teacher']){
     result[audience].sort((a,b)=>b.updated.localeCompare(a.updated)||a.id.localeCompare(b.id));
     await writeFile(path.join(publicDir,'catalog',`${audience}.json`),JSON.stringify(result[audience],null,2)+'\n');
-    for(const item of result[audience]){
-      const source=path.join(dir,item.id),destination=path.join(publicDir,'tools',item.id);
-      await cp(path.join(source,'files'),destination,{recursive:true});
-      await expandAssetBundle(source,destination);
-    }
   }
+  for(const module of published) await copyModuleFiles(projectRoot,module,path.join(publicDir,'tools',module.id));
   await cp(path.join(projectRoot,'shared'),path.join(publicDir,'shared'),{recursive:true});
   await writeFile(path.join(publicDir,'library.config.json'),JSON.stringify({teacherMode:config,version:'1.0.0'},null,2)+'\n');
   return result;

@@ -1,9 +1,37 @@
 import http from 'node:http';
 import path from 'node:path';
-import {readFile,stat} from 'node:fs/promises';
 import {root} from './catalog.mjs';
-const dir=path.join(root,'dist'),port=Number(process.env.PORT||4188);
-const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.webmanifest':'application/manifest+json','.wasm':'application/wasm','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.pdf':'application/pdf'};
-const server=http.createServer(async(req,res)=>{try{const requested=decodeURIComponent(new URL(req.url,'http://localhost').pathname);if(requested.includes('\\')||requested.includes('\0'))throw new Error();let file=path.resolve(dir,'.'+requested);if(file!==dir&&!file.startsWith(dir+path.sep))throw new Error();if((await stat(file)).isDirectory())file=path.join(file,'index.html');const content=await readFile(file);res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(content);}catch{res.writeHead(404,{'Content-Type':'text/plain; charset=utf-8'});res.end('ファイルが見つかりません。ライブラリのホームから開き直してください。');}});
-server.on('error',err=>{if(err.code==='EADDRINUSE')console.error('すでに起動している可能性があります。http://127.0.0.1:'+port+'/ を開いてください。');else console.error(err.message);process.exitCode=1;});
-server.listen(port,'127.0.0.1',()=>console.log(`教材ライブラリ http://127.0.0.1:${port}/`));
+import {createDeveloper} from './developer.mjs';
+import {readStatic, send} from './http-files.mjs';
+
+const dir = path.join(root, 'dist');
+const port = Number(process.env.PORT || 4188);
+const developer = await createDeveloper(root);
+const server = http.createServer(async (req, res) => {
+  const host = req.headers.host;
+  if (host !== `127.0.0.1:${port}` && host !== `localhost:${port}`) return send(res, 400, 'このPCの確認用アドレスを開いてください。');
+  const origin = `http://${host}`;
+  try {
+    const requested = decodeURIComponent(new URL(req.url, origin).pathname);
+    if (requested === '/developer') return send(res, 302, '', undefined, {Location:'/developer/'});
+    if (requested.startsWith('/developer/')) return await developer.handle(req, res, requested, origin);
+    if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, 'この操作は利用できません。');
+    const {content, relative, type} = await readStatic(dir, requested);
+    const payload = relative === 'index.html'
+      ? content.toString('utf8').replace('</head>', '<meta name="local-developer" content="available"></head>')
+      : content;
+    return send(res, 200, payload, type);
+  } catch {
+    return send(res, 404, 'ファイルが見つかりません。ライブラリのホームから開き直してください。');
+  }
+});
+server.on('error', error => {
+  console.error(error.code === 'EADDRINUSE'
+    ? `すでに起動している可能性があります。http://127.0.0.1:${port}/ を開いてください。`
+    : error.message);
+  process.exitCode = 1;
+});
+for (const signal of ['SIGINT', 'SIGTERM']) {
+  process.once(signal, () => server.close(() => void developer.close()));
+}
+server.listen(port, '127.0.0.1', () => console.log(`教材ライブラリ http://127.0.0.1:${port}/`));
