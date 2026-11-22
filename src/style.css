@@ -25,8 +25,8 @@ dialog{border:1px solid #d5dcc8;border-radius:17px;padding:36px;width:min(440px,
 @media(max-width:400px){.site-header{height:auto;min-height:78px;flex-wrap:wrap;padding-block:10px}.header-right{margin-left:auto}}
 
 .library-updates {
-  margin-top: 32px;
-  padding: 22px clamp(18px, 3vw, 30px) 5px;
+  margin-top: 20px;
+  padding: 19px clamp(16px, 2vw, 24px) 4px;
   background: #fffefa;
   border: 1px solid #dce2d3;
   border-radius: 12px;
@@ -42,11 +42,7 @@ dialog{border:1px solid #d5dcc8;border-radius:17px;padding:36px;width:min(440px,
 }
 .update-list { list-style: none; margin: 14px 0 0; padding: 0; }
 .update-row {
-  display: grid;
-  grid-template-columns: 104px minmax(0, 1fr);
-  align-items: start;
-  gap: 20px;
-  padding: 12px 0 15px;
+  padding: 12px 0 14px;
   border-top: 1px solid #e5e9df;
 }
 .update-meta {
@@ -54,9 +50,8 @@ dialog{border:1px solid #d5dcc8;border-radius:17px;padding:36px;width:min(440px,
   flex-wrap: wrap;
   align-items: center;
   gap: 5px 10px;
-  padding-top: 7px;
   color: #5a6754;
-  font-size: 13px;
+  font-size: 12px;
 }
 .update-meta time { font-variant-numeric: tabular-nums; font-weight: 600; }
 .update-kind {
@@ -85,9 +80,20 @@ dialog{border:1px solid #d5dcc8;border-radius:17px;padding:36px;width:min(440px,
 .update-link .icon { flex: 0 0 16px; width: 16px; }
 .update-link:hover { text-decoration-color: currentColor; }
 .update-content p { color: #535d50; font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; }
+@media(min-width:1024px) {
+  .home-layout--with-updates {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(248px, 28%, 320px);
+    grid-template-areas: 'hero updates' 'discovery updates';
+    grid-template-rows: auto 1fr;
+    gap: 0 clamp(18px, 2vw, 26px);
+    align-items: start;
+  }
+  .home-layout--with-updates .hero { grid-area: hero; }
+  .home-layout--with-updates .home-discovery { grid-area: discovery; min-width: 0; }
+  .home-layout--with-updates .library-updates { grid-area: updates; margin-top: 0; }
+}
 @media(max-width:580px) {
-  .library-updates { margin-top: 25px; padding-top: 17px; }
+  .library-updates { margin-top: 16px; padding-top: 17px; }
   .library-updates h2 { font-size: 18px; }
-  .update-row { display: block; padding-top: 10px; }
-  .update-meta { padding-top: 0; }
 }
