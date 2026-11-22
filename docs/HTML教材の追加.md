@@ -45,12 +45,22 @@ modules/multiplication-cards/
 | tags | 例 `["かけ算","計算"]` |
 | entry / thumbnail | files内のHTMLと見本画像の相対パス |
 | updated | YYYY-MM-DD |
+| updates | 任意。ホームの「本だなの更新」に出す履歴 |
 | instructions | 使い方の文の配列 |
 | sample | 組込み見本なら true、実用教材なら false |
 
 児童用の分類ID：`japanese` 国語／`math` 算数／`science` 理科／`social` 社会／`life` 生活／`english` 外国語／`music` 音楽／`pe` 体育／`art` 図画工作／`home` 家庭／`moral` 道徳／`integrated` 総合／`activities` 特別活動。
 
 先生用の教材には、上の教科または `lesson` 授業準備／`classroom` 学級づくり／`school` 行事・校務／`documents` 文書・印刷を指定できます。教科を指定した先生用教材は、先生モードでその教科の一覧に並びます。
+
+通常の教材を新しく追加すると、`updated` の日付と `description` がホームの「本だなの更新」に載ります。各モードで使える教材の更新を、新しい順に最大6件表示します。新機能を載せるときは、`module.json` の `updates` に日付・種類・説明を記録します。初めて `updates` を記録する場合は、初回追加の日付も合わせて記入します。以後は過去の項目を残したまま、最新の項目を加えてください。
+
+```json
+"updates": [
+  { "date": "2026-11-22", "kind": "added", "summary": "九九を練習するアプリを追加しました。" },
+  { "date": "2026-11-23", "kind": "feature", "summary": "苦手な段だけ選んで練習できるようになりました。" }
+]
+```
 
 ## 4. 保存と公開の決まり
 
