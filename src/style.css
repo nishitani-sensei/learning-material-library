@@ -23,3 +23,71 @@ dialog{border:1px solid #d5dcc8;border-radius:17px;padding:36px;width:min(440px,
 .developer-guide .instruction-list{font-size:15px;line-height:1.8;margin:0 0 16px}
 @media(max-width:580px){.header-right{gap:6px}.header-right .developer-link{padding-inline:8px}}
 @media(max-width:400px){.site-header{height:auto;min-height:78px;flex-wrap:wrap;padding-block:10px}.header-right{margin-left:auto}}
+
+.library-updates {
+  margin-top: 32px;
+  padding: 22px clamp(18px, 3vw, 30px) 5px;
+  background: #fffefa;
+  border: 1px solid #dce2d3;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px #38432b06;
+}
+.library-updates h2 {
+  padding: 2px 0 2px 12px;
+  border-left: 3px solid #9aab85;
+  color: #344d37;
+  font-size: 20px;
+  line-height: 1.45;
+  letter-spacing: .05em;
+}
+.update-list { list-style: none; margin: 14px 0 0; padding: 0; }
+.update-row {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+  padding: 12px 0 15px;
+  border-top: 1px solid #e5e9df;
+}
+.update-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 10px;
+  padding-top: 7px;
+  color: #5a6754;
+  font-size: 13px;
+}
+.update-meta time { font-variant-numeric: tabular-nums; font-weight: 600; }
+.update-kind {
+  padding: 2px 8px;
+  border-radius: 5px;
+  background: #eaf0e3;
+  color: #3e5935;
+  font-size: 11px;
+  font-weight: 700;
+}
+.update-feature { background: #f3ebdf; color: #6b502f; }
+.update-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  min-height: 44px;
+  color: #2c543d;
+  font-size: 16px;
+  font-weight: 750;
+  text-decoration: underline;
+  text-decoration-color: #9cac95;
+  text-underline-offset: .24em;
+  overflow-wrap: anywhere;
+}
+.update-link .icon { flex: 0 0 16px; width: 16px; }
+.update-link:hover { text-decoration-color: currentColor; }
+.update-content p { color: #535d50; font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; }
+@media(max-width:580px) {
+  .library-updates { margin-top: 25px; padding-top: 17px; }
+  .library-updates h2 { font-size: 18px; }
+  .update-row { display: block; padding-top: 10px; }
+  .update-meta { padding-top: 0; }
+}

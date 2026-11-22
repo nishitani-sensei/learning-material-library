@@ -7,6 +7,10 @@ export const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'
 const categories={student:['japanese','math','science','social','life','english','music','pe','art','home','moral','integrated','activities'],teacher:['lesson','classroom','school','documents']};
 const runTar = promisify(execFile);
 export function validRelative(p){return typeof p==='string'&&p.length>0&&!path.isAbsolute(p)&&!p.includes('\\')&&!p.split('/').some(x=>!x||x==='.'||x==='..')&&!/[:?#\u0000-\u0020]/.test(p);}
+function validDate(value){
+  return typeof value==='string' && /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+    !Number.isNaN(Date.parse(value)) && new Date(value).toISOString().slice(0,10)===value;
+}
 export function validateMetadata(m,folder,seen=new Set()){
   const fail=msg=>{throw new Error(`${folder}: ${msg}`);};
   if(!m||typeof m!=='object')fail('紹介情報がありません');
@@ -19,8 +23,12 @@ export function validateMetadata(m,folder,seen=new Set()){
   if(m.audience==='teacher'&&m.grades.length)fail('先生用の学年は空の配列にしてください');
   for(const key of ['tags','instructions'])if(!Array.isArray(m[key])||!m[key].every(x=>typeof x==='string'&&x.trim()))fail(`${key}を文字の配列にしてください`);
   if(!validRelative(m.entry)||!m.entry.endsWith('.html')||!validRelative(m.thumbnail))fail('起動先・見本画像はフォルダー内の相対パスにしてください');
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(m.updated)||Number.isNaN(Date.parse(m.updated)))fail('更新日をYYYY-MM-DDで入力してください');
+  if(!validDate(m.updated))fail('更新日をYYYY-MM-DDで入力してください');
   if(typeof m.sample!=='boolean')fail('sampleにtrueまたはfalseを指定してください');
+  if(m.updates!==undefined && (!Array.isArray(m.updates)||m.updates.some(update=>
+    !update || !['added','feature'].includes(update.kind) ||
+    !validDate(update.date) ||
+    typeof update.summary!=='string' || !update.summary.trim())))fail('更新履歴には日付・種類・短い説明を入力してください');
   seen.add(m.id);return m;
 }
 async function inspectFiles(dir,base=dir){
@@ -102,7 +110,9 @@ export async function buildCatalog(projectRoot=root){
     await verifyModuleFiles(projectRoot,m);
     // 明示した紹介項目だけを公開する。設定メモなどの付加情報は取り込まない。
     result[m.audience].push({id:m.id,title:m.title,description:m.description,audience:m.audience,category:m.category,grades:m.grades,
-      tags:m.tags,kind:m.kind,entry:`tools/${m.id}/${m.entry}`,thumbnail:`tools/${m.id}/${m.thumbnail}`,updated:m.updated,instructions:m.instructions,sample:m.sample});
+      tags:m.tags,kind:m.kind,entry:`tools/${m.id}/${m.entry}`,thumbnail:`tools/${m.id}/${m.thumbnail}`,updated:m.updated,instructions:m.instructions,sample:m.sample,
+      updates:m.updates?.map(({date,kind,summary})=>({date,kind,summary})) ??
+        (m.sample ? [] : [{date:m.updated,kind:'added',summary:m.description}])});
   }
   const config=JSON.parse(await readFile(path.join(projectRoot,'config','teacher-mode.json'),'utf8'));
   if(config.algorithm!=='SHA-256'||!/^[0-9a-f]{64}$/.test(config.digest)||!/^[0-9a-f]{32}$/.test(config.salt))throw new Error('先生モードの設定がありません。先にパスワードを設定してください');
