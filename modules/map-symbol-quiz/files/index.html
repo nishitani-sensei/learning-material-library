@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f8ee">
+  <meta name="description" content="小学生向け。地図記号を4択クイズや図鑑で楽しく学ぼう。">
+  <title>地図記号クイズ</title>
+  <link rel="icon" href="./assets/compass.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./css/style.css">
+  <script type="module" src="./js/app.js"></script>
+</head>
+<body>
+  <script src="../../shared/return.js"></script>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <button class="brand" type="button" data-action="home">
+        <img src="./assets/compass.svg" alt="" width="38" height="38">
+        <span>地図記号クイズ</span>
+      </button>
+      <span class="header-label">小学生の社会科</span>
+    </div>
+  </header>
+  <main id="app" class="shell app-shell">
+    <noscript>この教材を使うには、ブラウザでJavaScriptを有効にしてください。</noscript>
+  </main>
+  <footer class="site-footer shell">
+    <span>地図記号クイズ</span>
+    <button class="text-button" type="button" data-action="sources">教材の出典</button>
+  </footer>
+  <dialog id="leave-dialog" aria-labelledby="leave-title">
+    <form method="dialog">
+      <h2 id="leave-title">クイズをおわりますか？</h2>
+      <p id="leave-message"></p>
+      <div class="actions">
+        <button class="button neutral" value="continue" autofocus>つづける</button>
+        <button class="button primary" value="finish">おわる</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>
