@@ -1,8 +1,14 @@
 export type Audience = 'student' | 'teacher';
+export interface ToolUpdate {
+  date: string;
+  kind: 'added' | 'feature';
+  summary: string;
+}
 export interface Tool {
   id: string; title: string; description: string; audience: Audience; category: string;
   grades: number[]; tags: string[]; kind: string; entry: string; thumbnail: string;
   updated: string; instructions: string[]; sample: boolean;
+  updates?: ToolUpdate[];
 }
 export const subjects = [
   {id:'japanese',name:'国語',reading:'こくご',icon:'あ',color:'rose'},
@@ -26,6 +32,11 @@ export const workCategories = [
 export const categoryName = (id:string) => [...subjects,...workCategories].find(c=>c.id===id)?.name ?? id;
 export const normalize = (s:string) => s.normalize('NFKC').toLocaleLowerCase('ja').trim();
 export function visibleTools(tools:Tool[], teacher:boolean) {return tools.filter(t=>teacher || t.audience==='student');}
+export function recentUpdates(tools: Tool[]) {
+  return tools.flatMap(tool => (tool.updates ?? []).map(update => ({tool, update})))
+    .sort((a, b) => b.update.date.localeCompare(a.update.date) || a.tool.id.localeCompare(b.tool.id))
+    .slice(0, 6);
+}
 export function filterTools(tools:Tool[], filters:{query:string;category:string;grade:string;kind:string}) {
   const words = normalize(filters.query).split(/\s+/).filter(Boolean);
   return tools.filter(t=> (!filters.category || t.category===filters.category) &&
@@ -46,6 +57,11 @@ export function parseCatalog(value:unknown,audience:Audience):Tool[] {
       !safeAsset(t.thumbnail)||!Array.isArray(t.grades)||!t.grades.every((g:unknown)=>Number.isInteger(g)&&Number(g)>=1&&Number(g)<=6)||
       !Array.isArray(t.tags)||!t.tags.every((s:unknown)=>typeof s==='string')||!Array.isArray(t.instructions)||!t.instructions.every((s:unknown)=>typeof s==='string')||
       typeof t.kind!=='string'||typeof t.updated!=='string'||typeof t.sample!=='boolean')throw new Error('INVALID_CATALOG');
+    if(t.updates!==undefined && (!Array.isArray(t.updates)||t.updates.some((update:Partial<ToolUpdate>|null)=>
+      !update || (update.kind!=='added' && update.kind!=='feature') ||
+      typeof update.date!=='string' || !/^\d{4}-\d{2}-\d{2}$/.test(update.date) || typeof update.summary!=='string'))){
+      throw new Error('INVALID_CATALOG');
+    }
     seen.add(t.id);
   }
   return value as Tool[];
