@@ -40,21 +40,33 @@ test('非公開にすると一覧とHTML・素材が次の公開から外れ、�
   const temp = await mkdtemp(path.join(os.tmpdir(), 'kyozai-publication-'));
   try {
     for (const folder of ['modules/sample/files', 'config', 'shared']) await mkdir(path.join(temp, folder), {recursive:true});
-    await writeFile(path.join(temp, 'modules/sample/module.json'), JSON.stringify(metadata));
+    const metadataPath = path.join(temp, 'modules/sample/module.json');
+    const tool = {...metadata, sample:false};
+    await writeFile(metadataPath, JSON.stringify(tool));
     await writeFile(path.join(temp, 'modules/sample/files/index.html'), '<h1>見本</h1>');
     await writeFile(path.join(temp, 'modules/sample/files/preview.svg'), '<svg/>');
     await writeFile(path.join(temp, 'config/teacher-mode.json'), JSON.stringify({algorithm:'SHA-256', salt:'a'.repeat(32), digest:'a'.repeat(64)}));
     const settings = path.join(temp, 'config/publication.json');
     const entry = path.join(temp, 'public/tools/sample/index.html');
-    assert.equal((await buildCatalog(temp)).student.length, 1);
+    const first = (await buildCatalog(temp)).student[0];
+    assert.deepEqual(first.updates, [{date:tool.updated,kind:'added',summary:tool.description}]);
     await writeFile(settings, JSON.stringify({unpublished:['sample']}));
     assert.deepEqual(await buildCatalog(temp), {student:[], teacher:[]});
     await assert.rejects(() => readFile(entry), {code:'ENOENT'});
     assert.equal(await readFile(path.join(temp, 'modules/sample/files/index.html'), 'utf8'), '<h1>見本</h1>');
     await writeFile(settings, JSON.stringify({unpublished:[]}));
-    assert.equal((await buildCatalog(temp)).student.length, 1);
+    const feature = {date:'2026-11-22',kind:'feature',summary:'練習の範囲を選べるようになりました。'};
+    await writeFile(metadataPath, JSON.stringify({...tool, updated:feature.date, updates:[...first.updates, {...feature, privateMemo:'公開しない'}]}));
+    assert.deepEqual((await buildCatalog(temp)).student[0].updates, [...first.updates, feature]);
     assert.equal(await readFile(entry, 'utf8'), '<h1>見本</h1>');
     await writeFile(settings, JSON.stringify({unpublished:['unknown']}));
     await assert.rejects(() => buildCatalog(temp), /公開設定/);
   } finally { await rm(temp, {recursive:true, force:true}); }
+});
+
+test('不正な日付・種類・説明の更新履歴を検出する', () => {
+  const feature = {date:'2026-11-22',kind:'feature',summary:'機能を追加'};
+  for (const patch of [{date:'2026-02-30'},{kind:'unknown'},{summary:'  '}]) {
+    assert.throws(() => validateMetadata({...metadata, updates:[{...feature, ...patch}]}, 'sample'), /更新履歴/);
+  }
 });
